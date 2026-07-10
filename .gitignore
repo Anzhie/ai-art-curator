@@ -1,0 +1,14 @@
+# Python environment
+.venv/
+__pycache__/
+*.pyc
+
+# Local data & vector storage
+data/
+chroma_db/
+*.json
+*.csv
+
+# Logs & Environment variables
+*.log
+.env
