@@ -22,11 +22,11 @@ The project demonstrates advanced LLM orchestration and data-intensive system en
 
 ## 🚀 Roadmap Progress
 
-* [x] v0.1.0 — Repository Setup & Architecture Blueprint
-* [ ] v0.2.0 — Artwork Knowledge Base (Museum APIs Ingestion)
-* [ ] v0.3.0 — Semantic Retrieval Engine (ChromaDB Integration)
-* [ ] v0.4.0 — Conversational RAG (Local LLM Integration)
-* [ ] v0.5.0 — Intelligent Dialogue (Ambiguity Analysis)
-* [ ] v0.6.0 — LangGraph Workflow Implementation
-* [ ] v0.7.0 — Public Demo (Streamlit & Hugging Face Spaces Deployment)
-* [ ] v1.0.0 — Production Release (Docker, Tests & Full Documentation)
+* [x] v0.1.0 — Repository Setup, Architecture Blueprint & MIT License
+* [ ] v0.2.0 — Artwork Knowledge Base (Museum APIs Data Ingestion & Pydantic Validation)
+* [ ] v0.3.0 — Semantic Retrieval Engine (ChromaDB Indexing & Vector Search)
+* [ ] v0.4.0 — Phase 1: Prompt-based Conversational RAG + Public Demo (Streamlit, HF Spaces, Safety Guardrails & Local Feedback Loop)
+* [ ] v0.5.0 — Phase 2: Intelligent Dialogue (Data-driven Analyzer Node Integration based on User Feedback)
+* [ ] v0.6.0 — Phase 3: LangGraph Workflow (Migration to State Machine Architecture)
+* [ ] v0.7.0 — Portfolio Release Candidate (Prompt Optimization & Second-tier Testing)
+* [ ] v1.0.0 — Production Release (Docker Deployment, Comprehensive E2E Test Suite)
