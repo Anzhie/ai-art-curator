@@ -1,101 +1,85 @@
 import requests
-from typing import List, Dict, Any
-from src.ingestion.schema import Artwork
+import csv
+import os
+import time
 
-BASE_URL = "https://collectionapi.metmuseum.org/public/collection/v1"
-EUROPEAN_PAINTINGS_DEPT = 11
-
-def fetch_met_artwork_ids(limit: int = 10) -> List[int]:
-    """
-    Fetches a list of artwork IDs from the European Paintings department that have images.
-    """
-    search_url = f"{BASE_URL}/search"
-    params = {
-        "departmentId": EUROPEAN_PAINTINGS_DEPT,
-        "hasImages": "true",
-        "q": "painting"  # General query to get a broad selection of paintings
+def fetch_met_masterpieces():
+    print("=== STARTING THE MET INGESTION PIPELINE ===")
+    search_url = "https://collectionapi.metmuseum.org/public/collection/v1/search"
+    
+    # Query parameters to target only entries containing paintings with public images
+    params = {"q": "painting", "hasImages": "true"}
+    headers = {
+        "User-Agent": "ArtCuratorBot/1.0 (your-email@example.com) Python-requests"
     }
     
     try:
-        response = requests.get(search_url, params=params, timeout=10)
+        print("Querying The Met search endpoint for matching artwork catalog IDs...")
+        response = requests.get(search_url, params=params, headers=headers, timeout=15)
         response.raise_for_status()
-        data = response.json()
-        object_ids = data.get("objectIDs", [])
-        return object_ids[:limit]
-    except requests.RequestException as e:
-        print(f"Error fetching IDs from The Met: {e}")
-        return []
-
-def fetch_met_artwork_details(object_id: int) -> Artwork | None:
-    """
-    Fetches detailed information for a specific object ID and maps it to the Artwork schema.
-    """
-    object_url = f"{BASE_URL}/objects/{object_id}"
-    
-    try:
-        response = requests.get(object_url, timeout=10)
-        response.raise_for_status()
-        data = response.json()
+        object_ids = response.json().get("objectIDs", [])
         
-        # Verify required fields and public domain image availability
-        if not data.get("primaryImageSmall") or not data.get("title"):
-            return None
+        # Slicing the catalog arrays to download exactly the top 50 entries
+        masterpiece_ids = object_ids[:50]
+        print(f"Successfully harvested IDs. Hydrating data for the top {len(masterpiece_ids)} items...")
+        
+        # Create output environment
+        os.makedirs("data", exist_ok=True)
+        csv_file_path = "data/raw/met_data.csv"
+        artworks_saved = 0
+        
+        with open(csv_file_path, mode="w", newline="", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            # Match our uniform schema definitions
+            writer.writerow(["id", "title", "artist", "year", "museum", "image_url", "description"])
             
-        # Construct description from available metadata fields
-        medium = data.get("medium", "Unknown medium")
-        culture = data.get("culture", "Unknown culture")
-        credit = data.get("creditLine", "")
-        description = f"A {medium} painting. {culture}. {credit}"
+            for idx, obj_id in enumerate(masterpiece_ids, start=1):
+                object_url = f"https://collectionapi.metmuseum.org/public/collection/v1/objects/{obj_id}"
+                print(f"Fetching object metadata [{idx}/{len(masterpiece_ids)}]: Met ID {obj_id}...")
+                
+                try:
+                    res = requests.get(object_url, headers=headers, timeout=10)
+                    if res.status_code != 200:
+                        print(f"Skipping ID {obj_id}: HTTP status {res.status_code}")
+                        continue
+                        
+                    obj_data = res.json()
+                    
+                    # Ensure a primary high-res resource image is completely valid
+                    img_url = obj_data.get("primaryImage")
+                    if not img_url:
+                        print(f"Skipping ID {obj_id}: Missing primary web asset resource.")
+                        continue
+                        
+                    title = obj_data.get("title", "Untitled Masterpiece").strip()
+                    artist = obj_data.get("artistDisplayName", "Unknown Artist").strip()
+                    year = str(obj_data.get("objectBeginDate", ""))
+                    medium = obj_data.get("medium", "Oil on canvas")
+                    credit = obj_data.get("creditLine", "")
+                    
+                    artwork_id = f"met_{obj_id}"
+                    
+                    # Construct rich textual descriptions engineered for vector search embeddings
+                    description = (
+                        f"A beautiful masterpiece titled '{title}' created by {artist} around the year {year}. "
+                        f"This artwork is a {medium} execution. Preserved in The Metropolitan Museum of Art, "
+                        f"it carries immense historical weight ({credit}), presenting a profound visual narrative "
+                        f"perfect for reflective, cultural, and emotionally intense moods."
+                    )
+                    
+                    writer.writerow([artwork_id, title, artist, year, "The Met", img_url, description])
+                    artworks_saved += 1
+                    
+                    # Rate limiting safety cushion
+                    time.sleep(0.1)
+                    
+                except Exception as item_error:
+                    print(f"Error compiling record for Met asset {obj_id}: {item_error}")
+                    
+        print(f"\nSUCCESS: The Met pipeline completed. {artworks_saved} masterpieces saved to {csv_file_path}")
         
-        return Artwork(
-            id=f"met_{object_id}",
-            title=data.get("title"),
-            artist=data.get("artistDisplayName") or "Unknown Artist",
-            year=data.get("objectBeginDate"),
-            museum="The Metropolitan Museum of Art",
-            image_url=data.get("primaryImageSmall"),
-            description=description.strip()
-        )
-    except requests.RequestException as e:
-        print(f"Error fetching object {object_id} details from The Met: {e}")
-        return None
     except Exception as e:
-        print(f"Error parsing object {object_id}: {e}")
-        return None
-
-def get_met_artworks(limit: int = 10) -> List[Artwork]:
-    """
-    Orchestrates fetching and parsing of The Met artworks.
-    """
-    print(f"Starting Ingestion: Fetching top {limit} artwork IDs from The Met...")
-    ids = fetch_met_artwork_ids(limit=limit)
-    
-    artworks = []
-    for count, obj_id in enumerate(ids, start=1):
-        print(f"[{count}/{len(ids)}] Processing Met object ID: {obj_id}")
-        artwork = fetch_met_artwork_details(obj_id)
-        if artwork:
-            artworks.append(artwork)
-            
-    print(f"Successfully collected {len(artworks)} artworks from The Met.")
-    return artworks
-
+        print(f"Critical operational error inside The Met ingestion pipeline: {e}")
 
 if __name__ == "__main__":
-    # Quick standalone test to verify The Met collector works properly
-    try:
-        # Fetch a small batch of 3 artworks for testing
-        test_artworks = get_met_artworks(limit=3)
-        
-        print("\n=== TEST RESULTS ===")
-        for count, art in enumerate(test_artworks, start=1):
-            print(f"\nArtwork #{count}:")
-            print(f"  ID: {art.id}")
-            print(f"  Title: {art.title}")
-            print(f"  Artist: {art.artist}")
-            print(f"  Museum: {art.museum}")
-            print(f"  Image URL: {art.image_url}")
-            print(f"  Description Snippet: {art.description[:60]}...")
-            
-    except Exception as e:
-        print(f"\n[ERROR] Test execution failed: {e}")
+    fetch_met_masterpieces()
