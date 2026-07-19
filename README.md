@@ -23,7 +23,7 @@ The project demonstrates advanced LLM orchestration and data-intensive system en
 ## 🚀 Roadmap Progress
 
 * [x] v0.1.0 — Repository Setup, Architecture Blueprint & MIT License
-* [ ] v0.2.0 — Artwork Knowledge Base (Museum APIs Data Ingestion & Pydantic Validation)
+* [x] v0.2.0 — Artwork Knowledge Base (Museum APIs Data Ingestion & Pydantic Validation)
 * [ ] v0.3.0 — Semantic Retrieval Engine (ChromaDB Indexing & Vector Search)
 * [ ] v0.4.0 — Phase 1: Prompt-based Conversational RAG + Public Demo (Streamlit, HF Spaces, Safety Guardrails & Local Feedback Loop)
 * [ ] v0.5.0 — Phase 2: Intelligent Dialogue (Data-driven Analyzer Node Integration based on User Feedback)
