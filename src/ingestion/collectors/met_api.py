@@ -3,7 +3,7 @@ import csv
 import os
 import time
 
-def fetch_met_masterpieces():
+def fetch_met_masterpieces(limit: int = 50):
     print("=== STARTING THE MET INGESTION PIPELINE ===")
     search_url = "https://collectionapi.metmuseum.org/public/collection/v1/search"
     
@@ -19,12 +19,12 @@ def fetch_met_masterpieces():
         response.raise_for_status()
         object_ids = response.json().get("objectIDs", [])
         
-        # Slicing the catalog arrays to download exactly the top 50 entries
-        masterpiece_ids = object_ids[:50]
+        # Slicing the catalog arrays dynamically using the limit parameter
+        masterpiece_ids = object_ids[:limit]
         print(f"Successfully harvested IDs. Hydrating data for the top {len(masterpiece_ids)} items...")
         
-        # Create output environment
-        os.makedirs("data", exist_ok=True)
+        # Create output environment properly
+        os.makedirs("data/raw", exist_ok=True)
         csv_file_path = "data/raw/met_data.csv"
         artworks_saved = 0
         
@@ -82,4 +82,5 @@ def fetch_met_masterpieces():
         print(f"Critical operational error inside The Met ingestion pipeline: {e}")
 
 if __name__ == "__main__":
-    fetch_met_masterpieces()
+    # Standard production harvest
+    fetch_met_masterpieces(limit=50)

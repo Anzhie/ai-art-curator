@@ -4,7 +4,7 @@ import os
 import re
 import time
 
-def fetch_louvre_masterpieces():
+def fetch_louvre_masterpieces(limit: int = 50):
     print("=== STARTING LOUVRE INGESTION PIPELINE ===")
     
     # EXACT URL encoded parameter: limit 100, collection 8 (artworks)
@@ -14,13 +14,15 @@ def fetch_louvre_masterpieces():
     }
     
     ark_ids = set()
-    # Starting from page 63
-    page = 63 
+    # Starting from page 1 as requested
+    page = 1 
     
     print("Collecting artwork ARK IDs from the Louvre collection website...")
     
-    # Collect a large buffer of IDs (e.g., 200)
-    while len(ark_ids) < 200 and page <= 65:
+    # Dynamically scale the ID buffer target based on the requested limit
+    id_buffer_target = max(limit * 3, 100)
+    
+    while len(ark_ids) < id_buffer_target and page <= 20:
         url = f"{search_base_url}{page}"
         try:
             response = requests.get(url, headers=headers, timeout=10)
@@ -51,10 +53,10 @@ def fetch_louvre_masterpieces():
         writer = csv.writer(file)
         writer.writerow(["id", "title", "artist", "year", "museum", "image_url", "description"])
         
-        # Iterate through the large pool of IDs
+        # Iterate through the pool of IDs
         for ark_id in masterpiece_ids:
-            # Stop exactly when we successfully SAVE 50 valid artworks
-            if artworks_saved >= 50:
+            # Stop exactly when we successfully SAVE the requested limit of valid artworks
+            if artworks_saved >= limit:
                 break
                 
             json_url = f"https://collections.louvre.fr/ark:/53355/{ark_id}.json"
@@ -104,7 +106,7 @@ def fetch_louvre_masterpieces():
                 writer.writerow([artwork_id, title, artist, year, "Louvre", image_url, description])
                 artworks_saved += 1
                 
-                print(f"[{artworks_saved}/50] Successfully saved: {title}")
+                print(f"[{artworks_saved}/{limit}] Successfully saved: {title}")
                 time.sleep(0.3)
                 
             except Exception as e:
@@ -113,4 +115,5 @@ def fetch_louvre_masterpieces():
     print(f"\nSUCCESS: Louvre pipeline completed. {artworks_saved} masterpieces saved to {csv_file_path}")
 
 if __name__ == "__main__":
-    fetch_louvre_masterpieces()
+    # Execute production harvest for the top 50 masterpieces
+    fetch_louvre_masterpieces(limit=50)

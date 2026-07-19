@@ -45,7 +45,7 @@ def extract_linked_art_field(json_data: dict) -> dict:
     except Exception:
         return None
 
-def get_rijks_artworks(limit: int = 50):
+def get_rijks_masterpieces(limit: int = 50):
     """
     Orchestrates fetching only paintings from the Rijksmuseum open endpoint,
     parsing them, and writing results directly into a structured database CSV file.
@@ -108,4 +108,4 @@ def get_rijks_artworks(limit: int = 50):
 
 if __name__ == "__main__":
     # Execute production data harvest for the top 50 masterpieces
-    get_rijks_artworks(limit=50)
+    get_rijks_masterpieces(limit=50)
