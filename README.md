@@ -23,7 +23,13 @@ The project demonstrates advanced LLM orchestration and data-intensive system en
 ## 🚀 Roadmap Progress
 
 * [x] v0.1.0 — Repository Setup, Architecture Blueprint & MIT License
-* [x] v0.2.0 — Artwork Knowledge Base (Museum APIs Data Ingestion & Pydantic Validation)
+* [x] v0.2.0 — Artwork Knowledge Base
+  - [x] Robust Ingestion Pipeline (Louvre, The Met, Rijksmuseum, Uffizi)
+  - [x] Keyless HTML scraping for Rijksmuseum (IIIF/Micrio via Regex)
+  - [x] Unified Data Schema (Pydantic validation)
+  - [x] AI-Driven Semantic Enrichment (themes, emotions, keywords)
+  - [x] Master Orchestration (pipeline.py & artworks.json)
+  - [x] Test Suite (data import, schema validation & URL reachability)
 * [x] v0.3.0 — Semantic Retrieval Engine
   - [x] Sentence Transformers (multilingual-e5-large)
   - [x] ChromaDB integration
