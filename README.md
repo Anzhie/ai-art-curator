@@ -24,7 +24,12 @@ The project demonstrates advanced LLM orchestration and data-intensive system en
 
 * [x] v0.1.0 — Repository Setup, Architecture Blueprint & MIT License
 * [x] v0.2.0 — Artwork Knowledge Base (Museum APIs Data Ingestion & Pydantic Validation)
-* [ ] v0.3.0 — Semantic Retrieval Engine (ChromaDB Indexing & Vector Search)
+* [x] v0.3.0 — Semantic Retrieval Engine
+  - [x] Sentence Transformers (multilingual-e5-large)
+  - [x] ChromaDB integration
+  - [x] Vector index building
+  - [x] Semantic search with Top-K results
+  - [x] Unit test suite
 * [ ] v0.4.0 — Phase 1: Prompt-based Conversational RAG + Public Demo (Streamlit, HF Spaces, Safety Guardrails & Local Feedback Loop)
 * [ ] v0.5.0 — Phase 2: Intelligent Dialogue (Data-driven Analyzer Node Integration based on User Feedback)
 * [ ] v0.6.0 — Phase 3: LangGraph Workflow (Migration to State Machine Architecture)
