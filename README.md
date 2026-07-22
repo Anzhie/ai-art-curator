@@ -22,7 +22,10 @@ The project demonstrates advanced LLM orchestration and data-intensive system en
 
 ## 🚀 Roadmap Progress
 
-* [x] v0.1.0 — Repository Setup, Architecture Blueprint & MIT License
+* [x] v0.1.0 — Project Setup & Architecture
+  - [x] Initial repository setup & directory structure
+  - [x] Project architecture & technical design definition
+  - [x] MIT License configuration
 * [x] v0.2.0 — Artwork Knowledge Base
   - [x] Robust Ingestion Pipeline (Louvre, The Met, Rijksmuseum, Uffizi)
   - [x] Keyless HTML scraping for Rijksmuseum (IIIF/Micrio via Regex)
