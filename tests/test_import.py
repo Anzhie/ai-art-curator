@@ -2,6 +2,7 @@ import json
 import os
 import requests
 import pytest
+from src.config import MUSEUM_ITEM_LIMIT
 
 DATA_FILE = "data/processed/artworks.json"
 
@@ -15,12 +16,13 @@ def loaded_artworks():
     return data
 
 def test_json_is_valid_and_count_is_correct(loaded_artworks):
-    """Verify successful import and artwork count."""
+    """Verify successful import and dynamic artwork count."""
     assert isinstance(loaded_artworks, list), "JSON must contain a list of objects"
     
-    # Expecting min 180 artworks (4 museums * 50 artworks each - 10% API issues)
-    expected_count = 180
-    assert len(loaded_artworks) >= expected_count, f"Expected {expected_count} artworks, but got {len(loaded_artworks)}"
+    # Calculate expected count dynamically based on the central config limit (Rijksmuseum max 1500, Uffizi - 1000)
+    expected_count = int((2 * MUSEUM_ITEM_LIMIT + + 1500 + 1000) * 0.9)
+    
+    assert len(loaded_artworks) >= expected_count, f"Expected at least {expected_count} artworks, but got {len(loaded_artworks)}"
 
 def test_custom_fields_exist(loaded_artworks):
     """Verify the presence of custom generated fields in all objects."""

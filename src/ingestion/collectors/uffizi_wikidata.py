@@ -1,19 +1,20 @@
 import requests
 import csv
 import os
+from src.config import MUSEUM_ITEM_LIMIT
 
-def fetch_uffizi_masterpieces(limit: int = 50):
+def fetch_uffizi_masterpieces(limit: int = MUSEUM_ITEM_LIMIT):
     print("=== STARTING UFFIZI INGESTION PIPELINE ===")
     print("Connecting to the Wikidata SPARQL API...")
     url = "https://query.wikidata.org/sparql"
     
-    # SPARQL query: Find items that are paintings (Q3305213) located in the Uffizi Gallery (Q51252)
-    # Using f-string with doubled curly braces to escape them for Python parsing
+    # Broadened SPARQL query: 
+    # Removed the "painting" restriction entirely. 
+    # Now fetching ANY item located in or part of the Uffizi collection that has an image.
     query = f"""
-    SELECT ?item ?title ?artistLabel ?year ?imageUrl WHERE {{
-      ?item wdt:P31 wd:Q3305213 ;          # Instance of: painting
-            wdt:P276 wd:Q51252 ;         # Location: Uffizi Gallery
-            wdt:P18 ?imageUrl .          # Must have a public domain image from Wikimedia Commons
+    SELECT DISTINCT ?item ?title ?artistLabel ?year ?imageUrl WHERE {{
+      ?item (wdt:P276|wdt:P195)/wdt:P361* wd:Q51252 ;      # Location or Collection (including sub-units)
+            wdt:P18 ?imageUrl .                            # Must have a public Wikimedia image
       
       # Fetch the English title of the artwork
       OPTIONAL {{ ?item rdfs:label ?title . FILTER(LANG(?title) = "en") }}
@@ -32,21 +33,21 @@ def fetch_uffizi_masterpieces(limit: int = 50):
     }}
     LIMIT {limit}
     """
-    
+
     # Provide a polite user agent identification for the Wikimedia API foundation
     headers = {
-        "User-Agent": "ArtCuratorBot/1.0 (your-email@example.com) Python-requests"
+        "User-Agent": "ArtCuratorBot/1.0 (anzhie.k@gmail.com) Python-requests"
     }
     
     try:
-        response = requests.get(url, params={'format': 'json', 'query': query}, headers=headers, timeout=15)
+        response = requests.get(url, params={'format': 'json', 'query': query}, headers=headers, timeout=30)
         response.raise_for_status()
         data = response.json()
-        
+
         # Enforce slicing via the limit parameter just in case
         results = data['results']['bindings'][:limit]
         print(f"Successfully retrieved {len(results)} real artworks from Uffizi via Wikidata!")
-        
+
         # Ensure the destination data directory exists properly
         os.makedirs("data/raw", exist_ok=True)
         csv_file_path = "data/raw/uffizi_data.csv"
@@ -65,11 +66,11 @@ def fetch_uffizi_masterpieces(limit: int = 50):
                 img_url = row.get('imageUrl', {}).get('value', '').strip()
                 
                 artwork_id = f"uffizi_{idx:03d}"
-                
+
                 # Generate a semantically rich English description for vector-based mood searching
                 description = (
-                    f"A magnificent classical painting titled '{title}' created by the master {artist} around the year {year}. "
-                    f"Located in the Uffizi Gallery, this artwork represents unparalleled historical depth, cultural significance, "
+                    f"A magnificent classical artwork titled '{title}' created by {artist} around the year {year}. "
+                    f"Located in the Uffizi Gallery, this piece represents unparalleled historical depth, cultural significance, "
                     f"and unique emotional resonance suitable for reflective, artistic, and historical moods."
                 )
                 
@@ -82,5 +83,4 @@ def fetch_uffizi_masterpieces(limit: int = 50):
         print(f"Error occurred while fetching from Wikidata API: {e}")
 
 if __name__ == "__main__":
-    # Standard production harvest
-    fetch_uffizi_masterpieces(limit=50)
+    fetch_uffizi_masterpieces()

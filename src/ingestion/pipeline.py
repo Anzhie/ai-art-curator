@@ -1,10 +1,11 @@
+from src.config import MUSEUM_ITEM_LIMIT
 from src.ingestion.collectors.louvre_official import fetch_louvre_masterpieces
 from src.ingestion.collectors.met_api import fetch_met_masterpieces
 from src.ingestion.collectors.rijks_api import get_rijks_masterpieces
 from src.ingestion.collectors.uffizi_wikidata import fetch_uffizi_masterpieces
 from import_data import build_unified_knowledge_base
 
-def run_pipeline(limit: int = 50):
+def run_pipeline(limit: int = MUSEUM_ITEM_LIMIT):
     """
     Orchestrates the entire ingestion workflow, enforcing a uniform download 
     limit across all museum collectors.
@@ -54,5 +55,4 @@ def run_pipeline(limit: int = 50):
     print("\n=== MASTER INGESTION PIPELINE COMPLETED SUCCESSFULLY ===")
 
 if __name__ == "__main__":
-    # Change the limit globally right here
-    run_pipeline(limit=50)
+    run_pipeline()

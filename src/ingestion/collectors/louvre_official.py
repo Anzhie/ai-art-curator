@@ -3,8 +3,9 @@ import csv
 import os
 import re
 import time
+from src.config import MUSEUM_ITEM_LIMIT
 
-def fetch_louvre_masterpieces(limit: int = 50):
+def fetch_louvre_masterpieces(limit: int = MUSEUM_ITEM_LIMIT):
     print("=== STARTING LOUVRE INGESTION PIPELINE ===")
     
     # EXACT URL encoded parameter: limit 100, collection 8 (artworks)
@@ -115,5 +116,4 @@ def fetch_louvre_masterpieces(limit: int = 50):
     print(f"\nSUCCESS: Louvre pipeline completed. {artworks_saved} masterpieces saved to {csv_file_path}")
 
 if __name__ == "__main__":
-    # Execute production harvest for the top 50 masterpieces
-    fetch_louvre_masterpieces(limit=50)
+    fetch_louvre_masterpieces()

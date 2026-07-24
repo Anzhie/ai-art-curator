@@ -2,15 +2,16 @@ import requests
 import csv
 import os
 import time
+from src.config import MUSEUM_ITEM_LIMIT
 
-def fetch_met_masterpieces(limit: int = 50):
+def fetch_met_masterpieces(limit: int = MUSEUM_ITEM_LIMIT):
     print("=== STARTING THE MET INGESTION PIPELINE ===")
     search_url = "https://collectionapi.metmuseum.org/public/collection/v1/search"
     
     # Query parameters to target only entries containing paintings with public images
     params = {"q": "painting", "hasImages": "true"}
     headers = {
-        "User-Agent": "ArtCuratorBot/1.0 (your-email@example.com) Python-requests"
+        "User-Agent": "ArtCuratorBot/1.0 (anzhie.k@gmail.com) Python-requests"
     }
     
     try:
@@ -38,9 +39,30 @@ def fetch_met_masterpieces(limit: int = 50):
                 print(f"Fetching object metadata [{idx}/{len(masterpiece_ids)}]: Met ID {obj_id}...")
                 
                 try:
-                    res = requests.get(object_url, headers=headers, timeout=10)
-                    if res.status_code != 200:
-                        print(f"Skipping ID {obj_id}: HTTP status {res.status_code}")
+                    # Implement retry mechanism specifically for 403 errors
+                    max_retries = 3
+                    request_successful = False
+                    
+                    for attempt in range(max_retries):
+                        res = requests.get(object_url, headers=headers, timeout=10)
+                        
+                        # Handle specific 403 Rate Limit error with a long pause
+                        if res.status_code == 403:
+                            print(f"HTTP 403 on ID {obj_id}. Pausing 10s (Attempt {attempt + 1}/{max_retries})...")
+                            time.sleep(10)
+                            continue
+                        
+                        # Handle other HTTP errors (e.g., 404 Not Found)
+                        if res.status_code != 200:
+                            print(f"Skipping ID {obj_id}: HTTP status {res.status_code}")
+                            break
+                            
+                        # Break the retry loop if request is successful (HTTP 200)
+                        request_successful = True
+                        break
+                        
+                    # Move to the next artwork if all retries failed or it's a hard error
+                    if not request_successful or res.status_code != 200:
                         continue
                         
                     obj_data = res.json()
@@ -70,11 +92,16 @@ def fetch_met_masterpieces(limit: int = 50):
                     writer.writerow([artwork_id, title, artist, year, "The Met", img_url, description])
                     artworks_saved += 1
                     
-                    # Rate limiting safety cushion
-                    time.sleep(0.1)
+                    # Stop as soon as the target limit of saved artworks is reached
+                    if artworks_saved >= MUSEUM_ITEM_LIMIT:
+                        break
                     
                 except Exception as item_error:
                     print(f"Error compiling record for Met asset {obj_id}: {item_error}")
+                
+                finally:
+                    # RATE LIMITING: Always executed to protect against HTTP 403 bans
+                    time.sleep(0.2)
                     
         print(f"\nSUCCESS: The Met pipeline completed. {artworks_saved} masterpieces saved to {csv_file_path}")
         
@@ -82,5 +109,4 @@ def fetch_met_masterpieces(limit: int = 50):
         print(f"Critical operational error inside The Met ingestion pipeline: {e}")
 
 if __name__ == "__main__":
-    # Standard production harvest
-    fetch_met_masterpieces(limit=50)
+    fetch_met_masterpieces()
