@@ -4,11 +4,11 @@ from typing import List, Dict, Any, Optional
 
 import chromadb
 from sentence_transformers import SentenceTransformer
+from src.config import EMBEDDING_MODEL_NAME
 
 # Configuration Constants
 CHROMA_PATH = "chroma_db"
 COLLECTION_NAME = "artworks_v1"
-MODEL_NAME = "intfloat/multilingual-e5-large"
 
 
 @lru_cache(maxsize=1)
@@ -17,9 +17,9 @@ def get_embedding_model() -> SentenceTransformer:
     Load the embedding model only once per Python process.
     All ArtRetriever instances reuse the same model.
     """
-    print(f"Loading embedding model: {MODEL_NAME}...")
+    print(f"Loading embedding model: {EMBEDDING_MODEL_NAME}...")
 
-    return SentenceTransformer(MODEL_NAME)
+    return SentenceTransformer(EMBEDDING_MODEL_NAME)
 
 
 class ArtRetriever:

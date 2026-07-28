@@ -3,12 +3,12 @@ import os
 from typing import List, Dict, Any
 import chromadb
 from sentence_transformers import SentenceTransformer
+from src.config import EMBEDDING_MODEL_NAME
 
 # Configuration Constants
 DATA_PATH = "data/processed/artworks.json"
 CHROMA_PATH = "chroma_db"
 COLLECTION_NAME = "artworks_v1"
-MODEL_NAME = "intfloat/multilingual-e5-large"
 
 
 class ArtworkIndexer:
@@ -17,7 +17,7 @@ class ArtworkIndexer:
     vector index inside ChromaDB using sentence-transformers embeddings.
     """
 
-    def __init__(self, chroma_path: str = CHROMA_PATH, model_name: str = MODEL_NAME):
+    def __init__(self, chroma_path: str = CHROMA_PATH, model_name: str = EMBEDDING_MODEL_NAME):
         print(f"Loading embedding model: {model_name}...")
         self.model = SentenceTransformer(model_name)
         
