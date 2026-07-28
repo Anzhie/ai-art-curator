@@ -1,5 +1,6 @@
 import json
 import ollama
+from src.config import LLM_MODEL_NAME 
 from src.schemas.curator_response import CuratorResponse
 
 def test_ollama_json_generation():
@@ -18,12 +19,13 @@ def test_ollama_json_generation():
     user_query = 'Show me something nice'
     
     response = ollama.chat(
-        model='qwen2.5:7b',
+        model=LLM_MODEL_NAME,
         messages=[
             {'role': 'system', 'content': system_instructions},
             {'role': 'user', 'content': user_query}
         ],
-        format='json'  # Force Ollama to return valid JSON
+        format=CuratorResponse.model_json_schema(),
+        options={'keep_alive': 0}  # Release model from memory after execution
     )
     
     raw_output = response['message']['content']
