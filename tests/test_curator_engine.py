@@ -1,11 +1,9 @@
 import pytest
-from src.rag.curator_engine import ArtCuratorEngine
 from src.schemas import CuratorResponse
 
 
-def test_curator_engine_recommendation():
+def test_curator_engine_recommendation(engine):
     """Verify that the RAG engine processes the query and outputs a valid CuratorResponse structure."""
-    engine = ArtCuratorEngine()
 
     # Pass exact artwork titles as stored in ChromaDB
     user_query = "Show me Pietà or Nativité et Adoration des bergers"
