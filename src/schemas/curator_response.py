@@ -10,6 +10,7 @@ class ResponseStatus(str, Enum):
 class ArtworkRecommendation(BaseModel):
     artwork_id: str = Field(..., description="Unique artwork ID from context")
     title: str = Field(..., description="Title of the artwork")
+    image_url: Optional[str] = Field(None, description="Direct web URL of the artwork image")  # Added image URL field
     why_this_artwork: str = Field(..., description="Emotional connection to user query")
     curators_note: str = Field(..., description="Art history context and story")
     what_to_notice: str = Field(..., description="Specific visual elements to observe")

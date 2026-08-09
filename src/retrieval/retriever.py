@@ -97,6 +97,7 @@ class ArtRetriever:
                         "artist": metadata.get("artist", "Unknown"),
                         "museum": metadata.get("museum", "Unknown"),
                         "year": metadata.get("year", "Unknown"),
+                        "image_url": metadata.get("image_url", ""), 
                         "description": results["documents"][0][i],
                         "distance": round(
                             results["distances"][0][i], 4
