@@ -24,7 +24,7 @@ def test_search_response_structure(retriever):
     assert len(results) == 1
 
     hit = results[0]
-    expected_keys = {"id", "title", "artist", "museum", "year", "description", "distance"}
+    expected_keys = {"id", "title", "artist", "museum", "year", "description", "distance", "image_url"}
 
     assert set(hit.keys()) == expected_keys, "Result dictionary missing required keys"
     assert isinstance(hit["distance"], float), "Distance metric must be float"
