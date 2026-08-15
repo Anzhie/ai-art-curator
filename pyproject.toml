@@ -1,0 +1,29 @@
+[project]
+name = "ai-art-curator"
+version = "0.1.0"
+description = "AI Art Curator with RAG pipeline."
+authors = [
+    {name = "Anzhelika Khasanova anzhie.k@gmail.com"}
+]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "streamlit (>=1.61.1,<2.0.0)",
+    "pandas (>=3.0.5,<4.0.0)",
+    "huggingface-hub (>=1.27.0,<2.0.0)",
+    "pydantic (>=2.13.4,<3.0.0)",
+    "chromadb (>=1.5.9,<2.0.0)",
+    "ollama (>=0.6.2,<0.7.0)",
+    "sentence-transformers (>=5.7.0,<6.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.1.1,<10.0.0)"
+]
