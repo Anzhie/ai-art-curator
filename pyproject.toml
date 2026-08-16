@@ -1,6 +1,6 @@
 [project]
 name = "ai-art-curator"
-version = "0.1.0"
+version = "0.4.0"
 description = "AI Art Curator with RAG pipeline."
 authors = [
     {name = "Anzhelika Khasanova anzhie.k@gmail.com"}
