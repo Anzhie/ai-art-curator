@@ -6,6 +6,9 @@ import streamlit as st
 from src.rag.curator_engine import ArtCuratorEngine
 from src.feedback.feedback_hf import log_to_hf_dataset
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # --- PAGE CONFIG ---
 st.set_page_config(
     page_title="AI Art Curator",
@@ -20,7 +23,7 @@ RAG_VERSION = "custom_v1"
 @st.cache_resource
 def load_engine():
     """Load and cache the RAG engine instance across Streamlit reruns."""
-    return ArtCuratorEngine(keep_alive="5m")
+    return ArtCuratorEngine()
 
 engine = load_engine()
 
