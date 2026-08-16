@@ -22,7 +22,7 @@ torch.set_num_threads(1)
 @pytest.fixture(scope="session")
 def engine():
     """Initialize ArtCuratorEngine once for all tests to save memory and execution time."""
-    return ArtCuratorEngine(keep_alive=0)
+    return ArtCuratorEngine()
 
 
 @pytest.fixture(scope="session")
