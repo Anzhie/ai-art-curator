@@ -1,24 +1,37 @@
+---
+title: AI Art Curator
+emoji: 🎨
+colorFrom: blue
+colorTo: indigo
+sdk: streamlit
+sdk_version: 1.30.0
+app_file: app.py
+pinned: false
+---
+
 # AI Art Curator 🎨🤖
 
-An agentic RAG application that helps users discover artworks that resonate with or gently transform their emotional state, while revealing the historical stories behind the art.
+An intelligent, interactive Art Curator built with a Retrieval-Augmented Generation (RAG) pipeline. The application helps users discover artworks that resonate with or gently transform their emotional state, while revealing the historical stories behind the art.
 
-While conventional RAG systems operate on a strict linear pipeline (Query -> Retrieval -> Generation), AI Art Curator introduces an interactive agentic loop. It dynamically evaluates conversation context, tracks dialogue state, and decides whether to ask clarifying questions or deliver a curated recommendation.
+While conventional RAG systems operate on a strict linear pipeline (Query -> Retrieval -> Generation), AI Art Curator introduces intent routing, structured output validation, safety guardrails, and real-time user feedback collection.
 
 ## 🏗 Architecture & Core Concepts
 
-The project demonstrates advanced LLM orchestration and data-intensive system engineering practices:
-* Agentic Routing: State management and transition workflows driven by LangGraph.
-* Intelligent Analyzer Node: A custom decision-making component evaluating search ambiguity and context sufficiency before generating responses.
-* Semantic Retrieval Engine: High-density vector search leveraging local embeddings and cross-lingual alignment.
-* Clean Architecture: Strict separation of data ingestion, retrieval logic, agent workflows, and the presentation layer.
+*   Smart Intent Routing: Pre-filters non-art queries to maintain the curator's persona and save computational resources.
+*   Vector Search Retrieval: Uses ChromaDB and sentence-transformers (multilingual-e5-large) to find conceptually relevant artworks from museum collections.
+*   Cloud LLM Generation: Powered by Hugging Face Serverless Inference API for fast, hardware-independent response generation.
+*   Structured JSON Output: Guarantees strict schema validation via Pydantic for rich artwork cards (*Why this artwork?*, *Curator's Note*, *What to Notice*).
+*   Safety Guardrails: Prevents prompt injection and out-of-domain queries before reaching the LLM.
+*   Interactive Rating Feedback: Users can evaluate recommendations using a 1-5 star rating system, automatically logged to Hugging Face Datasets for future optimization.
 
 ## 🛠 Tech Stack
 
-* AI Frameworks: LangChain, LangGraph (v0.5+)
-* LLM & Embeddings: Ollama (Gemma 3 / Qwen), multilingual-e5-large
-* Vector Database: ChromaDB
-* Backend & UI: FastAPI, Streamlit
-* Environment: Python 3.11+, Docker
+*   Frontend & UI: Streamlit
+*   LLM Engine: Hugging Face Inference API (huggingface-hub)
+*   Vector Database: ChromaDB
+*   Embeddings: sentence-transformers (multilingual-e5-large)
+*   Data Validation: Pydantic (v2+)
+*   Dependency Management: Poetry
 
 ## 🚀 Roadmap Progress
 
@@ -39,7 +52,15 @@ The project demonstrates advanced LLM orchestration and data-intensive system en
   - [x] Vector index building
   - [x] Semantic search with Top-K results
   - [x] Unit test suite
-* [ ] v0.4.0 — Phase 1: Prompt-based Conversational RAG + Public Demo (Streamlit, HF Spaces, Safety Guardrails & Local Feedback Loop)
+* [x] v0.4.0 — Prompt-based Conversational RAG & Public Demo
+  - [x] Cloud LLM Migration (Hugging Face Serverless Inference API)
+  - [x] System Prompt & Structured JSON Output Validation (Pydantic)
+  - [x] Pre-LLM Safety Guardrails & Domain Intent Router
+  - [x] Rich Artwork Cards (*Why this artwork*, *Curator's Note*, *What to Notice*)
+  - [x] Ambiguity Handling & Clarification Flow
+  - [x] Streamlit UI with Interactive 1-5 Star Rating Feedback
+  - [x] Feedback Logging to Hugging Face Dataset
+  - [x] Public Deployment to Hugging Face Spaces
 * [ ] v0.5.0 — Phase 2: Intelligent Dialogue (Data-driven Analyzer Node Integration based on User Feedback)
 * [ ] v0.6.0 — Phase 3: LangGraph Workflow (Migration to State Machine Architecture)
 * [ ] v0.7.0 — Portfolio Release Candidate (Prompt Optimization & Second-tier Testing)
