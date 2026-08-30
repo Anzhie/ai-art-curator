@@ -1,6 +1,6 @@
-import os
 import json
-from huggingface_hub import InferenceClient
+from groq import Groq
+from src.utils.secrets import get_secret
 
 def is_art_intent(user_query: str, model_name: str) -> bool:
     """Classifies whether the user query is strictly related to art, museum curation, or artwork recommendations."""
@@ -29,22 +29,21 @@ If the input is INVALID, return exactly: {"is_art_related": false}
 """
 
     # Retrieve the token from environment variables
-    hf_token = os.environ.get("HF_TOKEN")
+    api_key = get_secret("GROQ_API_KEY")
     
-    # Initialize the Inference Client
-    client = InferenceClient(
-        model=model_name, 
-        token=hf_token
-    )
+    # Initialize the Groq
+    client = Groq(api_key=api_key)
 
     try:
         # Requesting completion from Hugging Face Inference API
-        response = client.chat_completion(
+        response = client.chat.completions.create(
+            model=model_name,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"User query: '{user_query}'"},
             ],
-            max_tokens=50,      # We only need a tiny JSON response
+            response_format={"type": "json_object"},
+            max_tokens=100,      # We only need a tiny JSON response
             temperature=0.1     # Low temperature for classification stability
         )
         

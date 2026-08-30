@@ -1,9 +1,10 @@
 import os
 import json
-from huggingface_hub import InferenceClient
+from groq import Groq
 from src.config import LLM_MODEL_NAME 
 from src.schemas.curator_response import CuratorResponse
 from src.retrieval.retriever import ArtRetriever
+from src.utils.secrets import get_secret
 from .guardrails import check_input_safety
 from .intent_router import is_art_intent
 
@@ -16,13 +17,10 @@ class ArtCuratorEngine:
         self.retriever = ArtRetriever()
         
         # Retrieve the token from environment variables
-        hf_token = os.environ.get("HF_TOKEN")
+        api_key = get_secret("GROQ_API_KEY")
         
         # Initialize the Inference Client
-        self.client = InferenceClient(
-            model=self.model_name, 
-            token=hf_token
-        )
+        self.client = Groq(api_key=api_key)
 
     def generate_response(self, user_query: str) -> CuratorResponse:
         """Run the RAG pipeline: check safety -> check intent -> retrieve context -> query LLM."""
@@ -46,7 +44,7 @@ class ArtCuratorEngine:
             )
 
         # 3. Retrieve Context from Vector DB (Only reached if query is art-related)
-        context_artworks = self.retriever.search(query=user_query, top_k=3)
+        context_artworks = self.retriever.search(query=user_query, top_k=6)
 
         # 4. Main System Prompt for LLM Curation with Explicit Schema
         system_instructions = f"""
@@ -85,11 +83,13 @@ Return ONLY raw valid JSON, without any Markdown formatting or backticks.
         ]
         
         try:
-            # Requesting completion from Hugging Face Inference API
-            response = self.client.chat_completion(
+            # Requesting completion from Groq
+            response = self.client.chat.completions.create(
+                model=self.model_name,
                 messages=messages,
+                response_format={"type": "json_object"},
                 max_tokens=1500,
-                temperature=0.3
+                temperature=0.3,
             )
             
             # Extract the string content from the response
