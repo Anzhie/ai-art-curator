@@ -4,6 +4,7 @@ from datetime import datetime
 import streamlit as st
 
 from src.rag.curator_engine import ArtCuratorEngine
+from src.schemas.curator_response import ResponseStatus
 from src.feedback.feedback_hf import log_to_hf_dataset
 
 from dotenv import load_dotenv
@@ -17,7 +18,7 @@ st.set_page_config(
 )
 
 # Define active RAG version tag for evaluation tracking
-RAG_VERSION = "custom_v1"
+RAG_VERSION = "v0.5.0_analyzer"
 
 # --- CACHED RAG ENGINE ---
 @st.cache_resource
@@ -115,6 +116,15 @@ for idx, msg in enumerate(st.session_state.messages):
                     if item.what_to_notice:
                         st.markdown(f"🔍 What to Notice:\n{item.what_to_notice}")
 
+# --- HELPER TO BUILD HISTORY CONTEXT ---
+def get_history_context() -> str:
+    """Extract the last 3 user queries to pass into QueryAnalyzer."""
+    user_messages = [
+        msg["content"] for msg in st.session_state.messages 
+        if msg["role"] == "user" and msg.get("type") == "text"
+    ]
+    return " | ".join(user_messages[-3:]) if user_messages else ""
+
 # --- USER INPUT HANDLER ---
 if prompt := st.chat_input("Describe your mood, emotions, or the atmosphere you want to feel..."):
     st.session_state.messages.append({"role": "user", "type": "text", "content": prompt})
@@ -125,11 +135,12 @@ if prompt := st.chat_input("Describe your mood, emotions, or the atmosphere you 
     with st.chat_message("assistant", avatar="🧐"):
         with st.spinner("Curating art for you..."):
             start_time = time.time()
-            response = engine.generate_response(prompt)
+            history_ctx = get_history_context()
+            response = engine.generate_response(prompt, history_context=history_ctx)
             latency = round(time.time() - start_time, 2)
             
         # 1. Handle guardrails or clarification triggers (bypass feedback block)
-        if response.status in ["clarify", "off_topic"]:
+        if response.status in [ResponseStatus.CLARIFY, ResponseStatus.OFF_TOPIC, "clarify", "off_topic"]:
             msg_text = response.clarification_question or response.guardrail_message or "Could you please rephrase your request?"
             st.write(msg_text)
 
@@ -138,6 +149,9 @@ if prompt := st.chat_input("Describe your mood, emotions, or the atmosphere you 
                 "type": "text",
                 "content": msg_text
             })
+            
+            # Reset interaction state so feedback widget is hidden on clarification or off-topic responses
+            st.session_state.pop("latest_interaction", None)
 
         # 2. Render valid art recommendation card and record feedback metadata
         else:
@@ -168,15 +182,17 @@ if prompt := st.chat_input("Describe your mood, emotions, or the atmosphere you 
             })
 
             # Save evaluation metrics strictly for genuine art recommendations
+            status_str = response.status.value if isinstance(response.status, ResponseStatus) else str(response.status)
             st.session_state["latest_interaction"] = {
                 "user_query": prompt,
-                "response_status": response.status,
+                "response_status": status_str,
                 "retrieved_art_ids": [
                     rec.artwork_id
                     for rec in (response.recommendations or [])
                     if hasattr(rec, "artwork_id")
                 ],
                 "latency": latency,
+                "rag_version": RAG_VERSION
             }
 
         st.rerun()
@@ -194,7 +210,7 @@ if "latest_interaction" in st.session_state:
             interaction = st.session_state["latest_interaction"]
 
             log_to_hf_dataset(
-                rag_version=RAG_VERSION,
+                rag_version=interaction.get("rag_version", RAG_VERSION),
                 user_query=interaction["user_query"],
                 retrieved_art_ids=interaction["retrieved_art_ids"],
                 response_status=interaction["response_status"],
@@ -202,7 +218,6 @@ if "latest_interaction" in st.session_state:
                 comment=user_comment,
                 response_time_sec=interaction["latency"],
             )
-
             st.success("Thank you! Feedback recorded for RAG evaluation.")
             # Clear stored interaction state to prevent duplicate submissions
             del st.session_state["latest_interaction"]
