@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 import streamlit as st
 
-from src.rag.curator_engine import ArtCuratorEngine
+from src.graph.builder import curator_app
 from src.schemas.curator_response import ResponseStatus
 from src.feedback.feedback_hf import log_to_hf_dataset
 
@@ -18,22 +18,14 @@ st.set_page_config(
 )
 
 # Define active RAG version tag for evaluation tracking
-RAG_VERSION = "v0.5.0_analyzer"
-
-# --- CACHED RAG ENGINE ---
-@st.cache_resource
-def load_engine():
-    """Load and cache the RAG engine instance across Streamlit reruns."""
-    return ArtCuratorEngine()
-
-engine = load_engine()
+RAG_VERSION = "v0.6.0_langgraph"
 
 # --- CHAT HISTORY INITIALIZATION ---
 if "messages" not in st.session_state:
     welcome_text = (
-        "Welcome to your private gallery space. 🎨 "
+        "Welcome to your private gallery space. 🏛️ "
         "Share your mood, thoughts, or the atmosphere you wish to experience, "
-        "and I will curate an artwork for you."
+        "and I will search world museum collections to find existing masterpieces that match your vision."
     )
     st.session_state.messages = [
         {
@@ -105,7 +97,7 @@ for idx, msg in enumerate(st.session_state.messages):
                     st.subheader(f"🖼️ {item.title}")
 
                     if getattr(item, "image_url", None):
-                        st.image(item.image_url, use_container_width=True)
+                        st.image(item.image_url, width="stretch")
 
                     if item.why_this_artwork:
                         st.markdown(f"💡 Why this artwork:\n{item.why_this_artwork}")
@@ -136,7 +128,15 @@ if prompt := st.chat_input("Describe your mood, emotions, or the atmosphere you 
         with st.spinner("Curating art for you..."):
             start_time = time.time()
             history_ctx = get_history_context()
-            response = engine.generate_response(prompt, history_context=history_ctx)
+
+            inputs = {
+                "user_query": prompt,
+                "history_context": history_ctx,
+                "retrieved_artworks": []
+            }
+            graph_result = curator_app.invoke(inputs)
+            response = graph_result["final_response"]
+
             latency = round(time.time() - start_time, 2)
             
         # 1. Handle guardrails or clarification triggers (bypass feedback block)
