@@ -1,7 +1,7 @@
 import os
 import torch
 import pytest
-from src.rag.curator_engine import ArtCuratorEngine
+from src.graph.builder import curator_app
 from src.retrieval.retriever import ArtRetriever
 
 # Enforce single-threaded execution before ML libraries load to prevent thread contention and Windows memory issues
@@ -21,8 +21,8 @@ torch.set_num_threads(1)
 
 @pytest.fixture(scope="session")
 def engine():
-    """Initialize ArtCuratorEngine once for all tests to save memory and execution time."""
-    return ArtCuratorEngine()
+    """Provides the compiled LangGraph application instance for all tests."""
+    return curator_app
 
 
 @pytest.fixture(scope="session")
