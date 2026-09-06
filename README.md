@@ -20,6 +20,7 @@ While conventional RAG systems operate on a strict linear pipeline (Query -> Ret
 ## 🛠 Tech Stack
 
 *   Frontend & UI: Streamlit
+*   Orchestration & Workflow: LangGraph (StateGraph state machine)
 *   LLM Engine: Groq API (groq SDK with native JSON mode)
 *   Vector Database: ChromaDB (Git LFS pre-built index)
 *   Embeddings: sentence-transformers (multilingual-e5-large)
@@ -69,6 +70,10 @@ GROQ_API_KEY=your_groq_api_key_here
   - [x] Deprecated Legacy intent_router.py
   - [x] UI State Management Polish (Feedback Widget Suppressed on Non-Recommendations)
   - [x] Comprehensive Test Suite (QueryAnalyzer unit tests & mocked RAG engine flow)
-* [ ] v0.6.0 — Phase 3: LangGraph Workflow (Migration to State Machine Architecture)
+* [x] v0.6.0 — LangGraph Workflow (Migration to State Machine Architecture)
+  - [x] End-to-end StateGraph workflow architecture implementation (AgentState, builder, nodes, edges)
+  - [x] Pre-LLM injection and safety guardrails integrated into analyzer_node
+  - [x] Deprecated monolithic curator_engine.py in favor of graph-driven node execution
+  - [x] Deterministic test suite verifying graph transitions via mocked LLM decisions
 * [ ] v0.7.0 — Portfolio Release Candidate (Prompt Optimization & Second-tier Testing)
 * [ ] v1.0.0 — Production Release (Docker Deployment, Comprehensive E2E Test Suite)
