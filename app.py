@@ -97,7 +97,7 @@ for idx, msg in enumerate(st.session_state.messages):
                     st.subheader(f"🖼️ {item.title}")
 
                     if getattr(item, "image_url", None):
-                        st.image(item.image_url, width="stretch")
+                        st.image(item.image_url, use_container_width=True)
 
                     if item.why_this_artwork:
                         st.markdown(f"💡 Why this artwork:\n{item.why_this_artwork}")
@@ -107,6 +107,31 @@ for idx, msg in enumerate(st.session_state.messages):
 
                     if item.what_to_notice:
                         st.markdown(f"🔍 What to Notice:\n{item.what_to_notice}")
+
+            # Display feedback form directly inside the latest recommendation message
+            if idx == len(st.session_state.messages) - 1 and "latest_interaction" in st.session_state:
+                with st.expander("⭐ Help evaluate this recommendation", expanded=False):
+                    with st.form(key=f"feedback_form_{idx}"):
+                        rating_val = st.feedback("stars", key=f"stars_{idx}")
+                        user_comment = st.text_input("Comments (optional):", key=f"comment_{idx}")
+                        if st.form_submit_button("Submit Rating"):
+                            if rating_val is not None:
+                                interaction = st.session_state["latest_interaction"]
+                                log_to_hf_dataset(
+                                    rag_version=interaction.get("rag_version", RAG_VERSION),
+                                    user_query=interaction["user_query"],
+                                    retrieved_art_ids=interaction["retrieved_art_ids"],
+                                    response_status=interaction["response_status"],
+                                    rating=rating_val + 1,
+                                    comment=user_comment,
+                                    response_time_sec=interaction["latency"],
+                                )
+                                st.success("Thank you! Feedback recorded.")
+                                del st.session_state["latest_interaction"]
+                                time.sleep(1)
+                                st.rerun()
+                            else:
+                                st.warning("Please select a star rating first.")
 
 # --- HELPER TO BUILD HISTORY CONTEXT ---
 def get_history_context() -> str:
@@ -196,32 +221,3 @@ if prompt := st.chat_input("Describe your mood, emotions, or the atmosphere you 
             }
 
         st.rerun()
-
-# --- FEEDBACK UI (ANCHORED AT BOTTOM) ---
-if "latest_interaction" in st.session_state:
-    st.write("---")
-    st.write("Help evaluate this recommendation:")
-    
-    rating_val = st.feedback("stars")
-    user_comment = st.text_input("Comments (optional):", key="feedback_comment")
-
-    if st.button("Submit Rating"):
-        if rating_val is not None:
-            interaction = st.session_state["latest_interaction"]
-
-            log_to_hf_dataset(
-                rag_version=interaction.get("rag_version", RAG_VERSION),
-                user_query=interaction["user_query"],
-                retrieved_art_ids=interaction["retrieved_art_ids"],
-                response_status=interaction["response_status"],
-                rating=rating_val + 1,  # Convert Streamlit 0-4 index to 1-5 scale
-                comment=user_comment,
-                response_time_sec=interaction["latency"],
-            )
-            st.success("Thank you! Feedback recorded for RAG evaluation.")
-            # Clear stored interaction state to prevent duplicate submissions
-            del st.session_state["latest_interaction"]
-            time.sleep(1)
-            st.rerun()
-        else:
-            st.warning("Please select a star rating first.")
