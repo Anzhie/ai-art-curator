@@ -20,6 +20,7 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 
 COPY pyproject.toml poetry.lock ./
 
+RUN poetry lock
 RUN poetry install --no-root --only main
 
 COPY . .
