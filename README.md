@@ -75,5 +75,9 @@ GROQ_API_KEY=your_groq_api_key_here
   - [x] Pre-LLM injection and safety guardrails integrated into analyzer_node
   - [x] Deprecated monolithic curator_engine.py in favor of graph-driven node execution
   - [x] Deterministic test suite verifying graph transitions via mocked LLM decisions
-* [ ] v0.7.0 — Portfolio Release Candidate (Prompt Optimization & Second-tier Testing)
+* [x] v0.7.0 — Quality Polish & Edge Case Handling
+  - [x] Refined Pydantic schemas for resilient Zero-Shot query analysis and mood evaluation
+  - [x] Streamlit UI overhaul (embedded interactive feedback widget inside recommendation card)
+  - [x] Expanded pytest suite covering safety guardrails, prompt injections, and API failure fallbacks
+  - [x] Manual verification of complex dialogue scenarios and atmospheric mood requests
 * [ ] v1.0.0 — Production Release (Docker Deployment, Comprehensive E2E Test Suite)
